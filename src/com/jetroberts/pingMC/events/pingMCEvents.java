@@ -28,41 +28,60 @@ public class pingMCEvents implements Listener {
 
     @EventHandler
     public void onRightClick(PlayerInteractEvent event) {
-        if(event.getAction() == Action.RIGHT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_BLOCK){
-            if(event.getItem() != null){
-                if(Objects.equals(event.getItem().getItemMeta(), itemManager.pingtool.getItemMeta())){
+        if(hasRightClicked(event)){
+            if(hasItemInHand(event)){
+                if(hasPingTool(event)){
                     placePingItem(event);
                 }
             }
         }
     }
 
-    public void placePingItem(PlayerInteractEvent event) {
+    private boolean hasRightClicked(PlayerInteractEvent event) {
+        return event.getAction() == Action.RIGHT_CLICK_AIR || event.getAction() == Action.RIGHT_CLICK_BLOCK;
+    }
+
+    private boolean hasItemInHand(PlayerInteractEvent event) {
+        return event.getItem() != null;
+    }
+
+    private boolean hasPingTool(PlayerInteractEvent event) {
+        return Objects.equals(Objects.requireNonNull(event.getItem()).getItemMeta(), itemManager.pingtool.getItemMeta());
+    }
+
+    private void placePingItem(PlayerInteractEvent event) {
         Player player = event.getPlayer();
         Block targetBlock = player.getTargetBlock(null, 45);
 
         if(targetBlock.getType() != Material.AIR){
-            Location newTargetLocation = targetBlock.getLocation();
-            newTargetLocation.setY(newTargetLocation.getY() + 1);
+            Location targetLocation = targetBlock.getLocation();
+            targetLocation.setY(targetLocation.getY() + 1);
 
-            if(checkThatBlockIsAir(newTargetLocation)) {
-                ArmorStand stand = (ArmorStand) player.getWorld().spawnEntity(newTargetLocation, EntityType.ARMOR_STAND);
-                Objects.requireNonNull(stand.getEquipment()).setItemInMainHand(new ItemStack(Material.REDSTONE));
 
-                stand.setRightArmPose(new EulerAngle(Math.toRadians(50), Math.toRadians(0), Math.toRadians(0)));
-                stand.setHeadPose(new EulerAngle(Math.toRadians(17), Math.toRadians(9), Math.toRadians(0)));
-
-                stand.setVisible(false);
-                stand.setInvulnerable(true);
-                stand.setMarker(true);
-                stand.setGlowing(false);
-                stand.setBasePlate(false);
-                stand.setSilent(true);
-                stand.setGravity(false);
-
-                delayedDelete(stand);
+            if(checkThatBlockIsAir(targetLocation)) {
+                targetLocation.setX(targetLocation.getX() - 0.25);
+                targetLocation.setZ(targetLocation.getZ() + 0.25);
+                targetLocation.setYaw((float) 135);
+                placeArmorStandAtBlock(targetLocation, player);
             }
         }
+    }
+
+    private void placeArmorStandAtBlock(Location targetLocation, Player player) {
+        ArmorStand stand = (ArmorStand) player.getWorld().spawnEntity(targetLocation, EntityType.ARMOR_STAND);
+        Objects.requireNonNull(stand.getEquipment()).setItemInMainHand(new ItemStack(Material.REDSTONE));
+
+        stand.setRightArmPose(new EulerAngle(Math.toRadians(90), Math.toRadians(0), Math.toRadians(0)));
+
+        stand.setVisible(false);
+        stand.setInvulnerable(true);
+        stand.setMarker(true);
+        stand.setGlowing(false);
+        stand.setBasePlate(false);
+        stand.setSilent(true);
+        stand.setGravity(false);
+
+        delayedDelete(stand);
     }
 
     private void delayedDelete(ArmorStand stand){
