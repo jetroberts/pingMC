@@ -1,0 +1,9 @@
+name: pingMC
+version: 1.0
+author: jetroberts
+main: com.jetroberts.pingMC.pingMC
+api-version: 1.14
+commands:
+  getpinger:
+    description: Gives the player a pinging tool.
+    usage: /<command>
